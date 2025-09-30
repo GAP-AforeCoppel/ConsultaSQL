@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe de Consultas SQL Operativas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        .container {
+            max-width: 900px;
+        }
+        .code-block {
+            background-color: #e9eff6;
+            border-left: 4px solid #3b82f6; /* Tailwind blue-500 */
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+            white-space: pre;
+            font-family: Consolas, monospace;
+            font-size: 0.9em;
+            border-radius: 0.5rem;
+        }
+        .highlight-table th {
+            background-color: #dbeafe; /* Tailwind blue-100 */
+        }
+        .note {
+            background-color: #fef3c7; /* Tailwind amber-100 */
+            border-left: 4px solid #f59e0b; /* Tailwind amber-500 */
+        }
+        .footer-note {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+            text-align: right;
+        }
+        .awareness-message {
+            font-size: 1rem;
+            color: #10b981; /* Tailwind emerald-500 */
+            font-weight: 600;
+            text-align: center;
+            padding: 15px 0;
+            margin-top: 20px;
+            border-top: 2px dashed #a7f3d0;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="container mx-auto bg-white shadow-xl rounded-xl p-6 md:p-10">
+
+        <header class="mb-8 border-b-2 border-blue-600 pb-4">
+            <!-- LOGO: RUTA CORREGIDA A NOMBRE DE ARCHIVO DIRECTO -->
+            <div class="flex items-center mb-4">
+                <img src="afore 2 (1).png" alt="Logo de Afore Coppel" class="h-8 md:h-10 mr-4">
+                <h1 class="text-3xl font-extrabold text-blue-800">
+                    📄 Informe de Consultas SQL Operativas
+                </h1>
+            </div>
+            
+            <p class="text-gray-600 mt-2">
+                Procedimientos clave para la validación de vigencias, diagnósticos de rechazo y estatus de expedientes en SAFRE y PROD-NOTIFICACIONES.
+            </p>
+        </header>
+
+        <!-- Sección 1: Vigencia de Retiros Parciales -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-semibold text-gray-700 border-b pb-2 mb-4">
+                1. Validación de Vigencia de Marca "RETIROS PROCESO DE RETIRO PARCIAL"
+            </h2>
+            <p class="text-gray-600 mb-4">
+                Determina la fecha límite de la marca operativa para retiros parciales rechazados.
+            </p>
+
+            <table class="w-full text-sm rounded-lg overflow-hidden border border-gray-200 highlight-table">
+                <thead>
+                    <tr class="bg-blue-100">
+                        <th class="p-3">Tipo de Retiro</th>
+                        <th class="p-3">Vigencia de la Marca</th>
+                        <th class="p-3">Consideración Final</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3 border-t"><strong>Desempleo</strong></td>
+                        <td class="p-3 border-t">30 Días Naturales</td>
+                        <!-- CORREGIDO: Usando <b> para negrita, sin asterisco -->
+                        <td class="p-3 border-t">Se deben agregar <b>3 días hábiles</b> adicionales para el desmarque operativo.</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3 border-t"><strong>Matrimonio</strong></td>
+                        <td class="p-3 border-t">90 Días Naturales</td>
+                        <td class="p-3 border-t"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 class="text-lg font-medium mt-6 mb-3 text-blue-700">🛠️ Consulta a Ejecutar (SAFRE)</h3>
+            <pre class="code-block">select a.fecha_solicitud, a.nss, a.curp, a.tipo_desempleo, a.diag_cuenta_ind, a.estado_solicitud, a.rechazo_cod, b.fecha_ini_vigencia, b.fecha_fin_vigencia
+from ret_parcial as A
+LEFT OUTER JOIN ret_parcial_resol as B
+ON(a.nss = b.nss) 
+where a.nss=''</pre>
+
+            <h3 class="text-lg font-medium mt-6 mb-3 text-blue-700">Visualización de la Consulta</h3>
+            <div class="mb-6 rounded-lg overflow-hidden border border-gray-300 shadow-md">
+                <!-- IMAGEN: RUTA CORREGIDA A NOMBRE DE ARCHIVO DIRECTO -->
+                <img src="retiro parcial.PNG" alt="Ejemplo visual de la consulta de retiro parcial y sus resultados en el servidor SAFRE" class="w-full h-auto">
+            </div>
+        </section>
+
+        <!-- Sección 2: Rechazo 359 -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-semibold text-gray-700 border-b pb-2 mb-4">
+                2. Identificación del Rechazo 359 en Retiro Total
+            </h2>
+            <p class="text-gray-600 mb-4">
+                Se verifica el código **359**, que implica **documentación incompleta o incorrecta** en el expediente.
+            </p>
+
+            <div class="note p-3 rounded-md mb-2 text-gray-800">
+                <strong class="font-semibold">Importante:</strong> El caso más común es la omisión de un documento no catalogado como obligatorio en la plataforma (ej. Acta de Defunción en servicios de Beneficiario).
+            </div>
+
+            <!-- NOTA DE RECORDATORIO AGREGADA -->
+            <div class="note p-3 rounded-md mb-4 text-gray-800">
+                <strong class="font-semibold">Recordatorio:</strong> Es importante recordarle al Asesor Previsional que, aunque el documento aparezca como "NO OBLIGATORIO", es **necesaria su digitalización** para evitar el rechazo 359.
+            </div>
+
+            <h3 class="text-lg font-medium mt-6 mb-3 text-blue-700">🛠️ Consulta a Ejecutar (SAFRE)</h3>
+            <!-- El asterisco en la consulta SQL es necesario y se mantiene -->
+            <pre class="code-block">Select NSS, CONSECUTIVO, FOLIO, FOLIO_SOLICITUD, FECHA_SOLICITUD, COD_RECHAZO_ENT, * from
+ret_solicitud_tx
+where nss=''</pre>
+
+            <h3 class="text-lg font-medium mt-6 mb-3 text-blue-700">Visualización de la Consulta</h3>
+            <div class="mb-6 rounded-lg overflow-hidden border border-gray-300 shadow-md">
+                <!-- IMAGEN: RUTA CORREGIDA A NOMBRE DE ARCHIVO DIRECTO -->
+                <img src="RECHAZO 359.PNG" alt="Ejemplo visual de la consulta de rechazo 359 en el servidor SAFRE" class="w-full h-auto">
+            </div>
+        </section>
+
+        <!-- Sección 3: Estatus Incompleto Beneficiario -->
+        <section class="mb-6">
+            <h2 class="text-2xl font-semibold text-gray-700 border-b pb-2 mb-4">
+                3. Verificación de Estatus Incompleto en Expediente de Beneficiario
+            </h2>
+            <p class="text-gray-600 mb-4">
+                Determina si el servicio de Expediente de Beneficiario avanzó a la Mesa de Control o se quedó detenido en el módulo.
+            </p>
+
+            <h3 class="text-lg font-medium mt-6 mb-3 text-blue-700">🛠️ Consulta a Ejecutar (PROD-NOTIFICACIONES)</h3>
+            <pre class="code-block">SELECT * FROM PSER_TR_NOTIF_MOD_DATOS WHERE NSS=''</pre>
+
+            <h3 class="text-lg font-medium mt-6 mb-3 text-blue-700">Visualización de la Consulta</h3>
+            <div class="mb-6 rounded-lg overflow-hidden border border-gray-300 shadow-md">
+                <!-- IMAGEN: RUTA CORREGIDA A NOMBRE DE ARCHIVO DIRECTO -->
+                <img src="estatus incompleto.PNG" alt="Ejemplo visual de la consulta de estatus incompleto en el servidor PROD-NOTIFICACIONES" class="w-full h-auto">
+            </div>
+
+            <h3 class="text-lg font-medium mt-6 mb-3 text-green-700">📊 Análisis de Resultados</h3>
+            <table class="w-full text-sm rounded-lg overflow-hidden border border-gray-200">
+                <thead>
+                    <tr class="bg-green-100">
+                        <th class="p-3">Resultado de la Consulta</th>
+                        <th class="p-3">Interpretación del Estatus</th>
+                        <th class="p-3">Acción Requerida</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3 border-t"><strong>"No se encontraron registros"</strong></td>
+                        <td class="p-3 border-t">El servicio **NO avanzó** a validación y está **incompleto**.</td>
+                        <!-- CORREGIDO: Usando <b> para negrita, sin asterisco -->
+                        <td class="p-3 border-t text-red-600 font-bold"><b>Realizar nuevamente el servicio</b>.</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3 border-t"><strong>Sí arroja registros</strong></td>
+                        <td class="p-3 border-t">El servicio **SÍ avanzó** a Mesa de Control.</td>
+                        <td class="p-3 border-t">Análisis o levantar folio CRM para consultar motivo de rechazo.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <!-- MENSAJE DE CONCIENTIZACIÓN -->
+        <div class="awareness-message">
+            Te recordamos hacer uso de las herramientas disponibles, como los manuales, en la zona de promotores.
+        </div>
+
+        <!-- PIE DE PÁGINA -->
+        <div class="footer-note">
+            Realizado por la Gerencia de Atención al Público, Afore Coppel, 30 de septiembre de 2025.
+        </div>
+
+    </div>
+
+</body>
+</html>
